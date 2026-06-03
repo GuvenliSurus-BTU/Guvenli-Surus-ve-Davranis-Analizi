@@ -1,0 +1,242 @@
+{
+  "info": {
+    "name": "backend — Veritabanı ve Anomali",
+    "_postman_id": "b3c0a4d1-backend-anomaly",
+    "description": "Backend REST yüzeyi: sensör ingest, alarmlar, tripler, cihazlar, eşik override'ları, raporlar.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "deviceId", "value": "" },
+    { "key": "tripId", "value": "" },
+    { "key": "alarmId", "value": "" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "GET /healthz",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/healthz", "host": ["{{baseUrl}}"], "path": ["healthz"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "item": [
+        {
+          "name": "POST /api/v1/devices",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"label\": \"Pixel 6\",\n  \"platform\": \"android\",\n  \"model\": \"Pixel\",\n  \"appVersion\": \"1.0.0\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/devices",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Trips",
+      "item": [
+        {
+          "name": "POST /api/v1/trips/start",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"{{deviceId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/start",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "start"]
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/trips/:id/end",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}/end",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "{{tripId}}", "end"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/trips",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips?deviceId={{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips"],
+              "query": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/trips/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trips/{{tripId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "trips", "{{tripId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Sensor",
+      "item": [
+        {
+          "name": "POST /api/v1/sensor-data",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"deviceId\": \"{{deviceId}}\",\n  \"tripId\": \"{{tripId}}\",\n  \"readings\": [\n    {\n      \"ts\": \"2026-05-28T10:00:00.000Z\",\n      \"accel\": { \"x\": 0.05, \"y\": -4.2, \"z\": 9.78 },\n      \"gyro\":  { \"x\": 0.01, \"y\": 0.02, \"z\": 0.05 },\n      \"gps\":   { \"lat\": 40.23, \"lng\": 29.01, \"speed\": 12.4, \"accuracy\": 5 }\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-data",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sensor-data"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/sensor-data",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/sensor-data?deviceId={{deviceId}}&limit=100",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "sensor-data"],
+              "query": [
+                { "key": "deviceId", "value": "{{deviceId}}" },
+                { "key": "limit", "value": "100" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Alarms",
+      "item": [
+        {
+          "name": "GET /api/v1/alarms",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alarms?deviceId={{deviceId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alarms"],
+              "query": [{ "key": "deviceId", "value": "{{deviceId}}" }]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/alarms/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/alarms/{{alarmId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "alarms", "{{alarmId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Thresholds",
+      "item": [
+        {
+          "name": "GET /api/v1/devices/:id/thresholds",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}", "thresholds"]
+            }
+          }
+        },
+        {
+          "name": "PUT /api/v1/devices/:id/thresholds",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"overrides\": {\n    \"suddenBrakeAccelMs2\": -3.0,\n    \"sharpTurnYawRadS\": 1.2\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/devices/{{deviceId}}/thresholds",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "devices", "{{deviceId}}", "thresholds"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "GET /api/v1/reports/trip/:id",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/trip/{{tripId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "trip", "{{tripId}}"]
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/reports/device/:id/daily",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/reports/device/{{deviceId}}/daily",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "reports", "device", "{{deviceId}}", "daily"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
