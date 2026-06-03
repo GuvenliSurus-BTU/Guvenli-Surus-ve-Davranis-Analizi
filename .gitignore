@@ -1,0 +1,3 @@
+# Ignore backend and other folders since this branch is only for mobile
+backend/
+Mobile/
