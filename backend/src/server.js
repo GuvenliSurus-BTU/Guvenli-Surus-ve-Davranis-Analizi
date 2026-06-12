@@ -1,23 +1,35 @@
-const dotenv = require('dotenv');
-dotenv.config();
+require('dotenv').config();
+const http = require('http');
+const { Server } = require('socket.io');
+const createApp = require('./app');
+const env = require('./config/env');
+const { connectDb } = require('./config/db');
+const logger = require('./utils/logger');
+const { initRealtime } = require('./realtime/socket');
 
-const app = require('./app');
-const connectDB = require('./config/db');
+async function bootstrap() {
+  await connectDb();
 
-const PORT = process.env.PORT || 5000;
+  const express = require('express');
+  const rootApp = express();
+  const server = http.createServer(rootApp);
+  
+  const io = new Server(server, { cors: { origin: '*' } });
+  initRealtime(io);
 
-const startServer = async () => {
-  try {
-    await connectDB();
+  const app = createApp(io);
+  rootApp.use(app);
 
-    app.listen(PORT, () => {
-      console.log(`✅ Sunucu ${PORT} portunda çalışıyor`);
-      console.log(`📡 Ortam: ${process.env.NODE_ENV || 'development'}`);
-    });
-  } catch (error) {
-    console.error('❌ Sunucu başlatılamadı:', error.message);
+  server.listen(env.PORT, () => {
+    logger.info(`Server listening on port ${env.PORT}`);
+  });
+}
+
+if (require.main === module) {
+  bootstrap().catch((error) => {
+    logger.error(error);
     process.exit(1);
-  }
-};
+  });
+}
 
-startServer();
+module.exports = { bootstrap };

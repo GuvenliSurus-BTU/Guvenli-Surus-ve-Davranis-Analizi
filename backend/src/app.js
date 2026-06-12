@@ -1,30 +1,57 @@
+require('dotenv').config();
 const express = require('express');
+const helmet = require('helmet');
 const cors = require('cors');
-const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+const rateLimit = require('express-rate-limit');
+const swaggerUi = require('swagger-ui-express');
 
-const authRoutes = require('./routes/authRoutes');
-const deviceRoutes = require('./routes/deviceRoutes');
+const env = require('./config/env');
+const swaggerSpec = require('./config/swagger');
+const requestLogger = require('./middleware/requestLogger');
+const errorHandler = require('./middleware/errorHandler');
+
 const sensorRoutes = require('./routes/sensorRoutes');
+const alarmRoutes = require('./routes/alarmRoutes');
+const tripRoutes = require('./routes/tripRoutes');
+const thresholdRoutes = require('./routes/thresholdRoutes');
+const deviceRoutes = require('./routes/deviceRoutes');
+const reportRoutes = require('./routes/reportRoutes');
+const healthRoutes = require('./routes/healthRoutes');
+const speedLimitRoutes = require('./routes/speedLimitRoutes');
 
-const app = express();
+function createApp(io) {
+  const app = express();
 
-// ─── Middleware ───────────────────────────────────────────────────────────────
-app.use(cors());
-app.use(express.json({ limit: '5mb' }));  // Toplu sensör verisi için limit artırıldı
-app.use(express.urlencoded({ extended: true }));
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json({ limit: '2mb' }));
+  app.use(requestLogger);
+  app.use(
+    rateLimit({
+      windowMs: Number(env.RATE_LIMIT_WINDOW_MS),
+      max: Number(env.RATE_LIMIT_MAX),
+    }),
+  );
 
-// ─── Sağlık kontrolü ──────────────────────────────────────────────────────────
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
+  if (io) {
+    app.use((req, _res, next) => {
+      req.io = io.of('/realtime');
+      next();
+    });
+  }
 
-// ─── API Route'ları ───────────────────────────────────────────────────────────
-app.use('/api/auth', authRoutes);
-app.use('/api/devices', deviceRoutes);
-app.use('/api/sensors', sensorRoutes);
+  app.use('/api/v1/sensor-data', sensorRoutes);
+  app.use('/api/v1/alarms', alarmRoutes);
+  app.use('/api/v1/trips', tripRoutes);
+  app.use('/api/v1/devices', thresholdRoutes);
+  app.use('/api/v1/devices', deviceRoutes);
+  app.use('/api/v1/reports', reportRoutes);
+  app.use('/api/v1/speed-limit', speedLimitRoutes);
+  app.use('/', healthRoutes);
+  app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// ─── Hata Handler'ları ────────────────────────────────────────────────────────
-app.use(notFound);
-app.use(errorHandler);
+  app.use(errorHandler);
+  return app;
+}
 
-module.exports = app;
+module.exports = createApp;
