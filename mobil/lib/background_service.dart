@@ -10,7 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 const String serverUrlKey = 'server_url';
-const String defaultServerUrl = 'http://192.168.1.2:3000/api/v1/sensor-data'; // Varsayılan yerel IP adresi
+const String defaultServerUrl = 'http://192.168.1.2:5000/api/v1/sensor-data'; // Varsayılan yerel IP adresi
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -78,7 +78,26 @@ void onStart(ServiceInstance service) async {
     service.stopSelf();
   });
 
-  Timer.periodic(const Duration(seconds: 5), (timer) async {
+  Position? latestPosition;
+  
+  // GPS'i sürekli dinle ki döngüde bekleme yapmasın
+  Geolocator.getPositionStream(
+    locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
+  ).listen((Position position) {
+    latestPosition = position;
+  }).onError((e) {
+    print("GPS Hatası: $e");
+  });
+
+  List<Map<String, dynamic>> batchReadings = [];
+  
+  final prefs = await SharedPreferences.getInstance();
+  final double intervalSeconds = prefs.getDouble('polling_interval') ?? 0.5;
+  final int intervalMs = (intervalSeconds * 1000).toInt();
+  int batchSize = (5.0 / intervalSeconds).ceil();
+  if (batchSize < 1) batchSize = 1;
+
+  Timer.periodic(Duration(milliseconds: intervalMs), (timer) async {
     if (service is AndroidServiceInstance) {
       if (!(await service.isForegroundService())) {
         return;
@@ -86,24 +105,11 @@ void onStart(ServiceInstance service) async {
     }
 
     try {
-      Position? position;
-      try {
-        bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-        if (serviceEnabled) {
-          position = await Geolocator.getCurrentPosition(
-            desiredAccuracy: LocationAccuracy.high,
-            timeLimit: const Duration(seconds: 2),
-          );
-        }
-      } catch (e) {
-        // Location might be unavailable or timeout
-      }
-
       double accX = 0, accY = 0, accZ = 0;
       try {
         final accEvent = await accelerometerEventStream(
           samplingPeriod: const Duration(milliseconds: 100),
-        ).first;
+        ).first.timeout(const Duration(milliseconds: 200));
         accX = accEvent.x;
         accY = accEvent.y;
         accZ = accEvent.z;
@@ -113,13 +119,11 @@ void onStart(ServiceInstance service) async {
       try {
         final gyroEvent = await gyroscopeEventStream(
           samplingPeriod: const Duration(milliseconds: 100),
-        ).first;
+        ).first.timeout(const Duration(milliseconds: 200));
         gyroX = gyroEvent.x;
         gyroY = gyroEvent.y;
         gyroZ = gyroEvent.z;
       } catch (e) {}
-
-      final prefs = await SharedPreferences.getInstance();
 
       final Map<String, dynamic> reading = {
         'ts': DateTime.now().toIso8601String(),
@@ -127,43 +131,57 @@ void onStart(ServiceInstance service) async {
         'gyro': {'x': gyroX, 'y': gyroY, 'z': gyroZ},
       };
 
-      if (position != null) {
+      if (latestPosition != null) {
+        double realSpeed = latestPosition!.speed;
+        // GPS kaymalarını (drift) önlemek için 0.5 m/s altındaki hızları 0 kabul ediyoruz
+        if (realSpeed < 0.5) {
+          realSpeed = 0.0;
+        }
         reading['gps'] = {
-          'lat': position.latitude,
-          'lng': position.longitude,
-          'speed': position.speed,
-          'accuracy': position.accuracy,
+          'lat': latestPosition!.latitude,
+          'lng': latestPosition!.longitude,
+          'speed': realSpeed,
+          'accuracy': latestPosition!.accuracy,
         };
       }
 
-      final deviceId = prefs.getString('device_id') ?? 'mobile-device-01';
-      final data = {
-        'deviceId': deviceId,
-        'readings': [reading],
-      };
-      
-      service.invoke('update', {'data': data});
+      batchReadings.add(reading);
 
-      final targetUrl = prefs.getString(serverUrlKey) ?? defaultServerUrl;
-      final authToken = prefs.getString('auth_token') ?? 'dummy_token';
+      // Her X tick'te bir (yaklaşık 5 saniyede bir) toplu gönderim yap
+      if (batchReadings.length >= batchSize) {
+        final List<Map<String, dynamic>> payloadReadings = List.from(batchReadings);
+        batchReadings.clear(); // Listeyi hemen boşalt ki yeni veriler birikmeye başlasın
 
-      try {
-        final response = await http.post(
-          Uri.parse(targetUrl),
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer $authToken',
-          },
-          body: jsonEncode(data),
-        ).timeout(const Duration(seconds: 3));
+        final prefs = await SharedPreferences.getInstance();
+        final deviceId = prefs.getString('device_id') ?? 'mobile-device-01';
+        final data = {
+          'deviceId': deviceId,
+          'readings': payloadReadings,
+        };
         
-        service.invoke('update', {'status': 'Gönderildi (HTTP ${response.statusCode})'});
-      } on TimeoutException {
-        service.invoke('update', {'status': 'Bağlantı zaman aşımı (Sunucuya ulaşılamıyor)'});
-      } on SocketException {
-        service.invoke('update', {'status': 'Bağlantı reddedildi (IP veya Port hatalı)'});
-      } catch (e) {
-        service.invoke('update', {'status': 'Hata: $e'});
+        service.invoke('update', {'data': data});
+
+        final targetUrl = prefs.getString(serverUrlKey) ?? defaultServerUrl;
+        final authToken = prefs.getString('auth_token') ?? 'dummy_token';
+
+        try {
+          final response = await http.post(
+            Uri.parse(targetUrl),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer $authToken',
+            },
+            body: jsonEncode(data),
+          ).timeout(const Duration(seconds: 4));
+          
+          service.invoke('update', {'status': 'Toplu Gönderildi (${payloadReadings.length} kayıt, HTTP ${response.statusCode})'});
+        } on TimeoutException {
+          service.invoke('update', {'status': 'Bağlantı zaman aşımı (Sunucuya ulaşılamıyor)'});
+        } on SocketException {
+          service.invoke('update', {'status': 'Bağlantı reddedildi (IP veya Port hatalı)'});
+        } catch (e) {
+          service.invoke('update', {'status': 'Hata: $e'});
+        }
       }
       
     } catch (e) {
