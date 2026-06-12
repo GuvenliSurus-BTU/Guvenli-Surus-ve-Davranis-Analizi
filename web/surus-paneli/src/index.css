@@ -5,31 +5,45 @@
 
 /* ===== CSS Variables ===== */
 :root {
-  --bg-primary: #0f0f23;
-  --bg-secondary: #1a1a3e;
-  --bg-card: rgba(30, 30, 70, 0.6);
-  --bg-card-hover: rgba(40, 40, 90, 0.8);
-  --bg-glass: rgba(255, 255, 255, 0.05);
-  --border-glass: rgba(255, 255, 255, 0.1);
-  --text-primary: #e8e8ff;
-  --text-secondary: #a0a0cc;
-  --text-muted: #6b6b99;
-  --accent-blue: #4f6ef7;
-  --accent-blue-light: #7b93ff;
-  --accent-cyan: #00d4ff;
-  --accent-green: #00e676;
-  --accent-yellow: #ffab40;
-  --accent-red: #ff5252;
-  --accent-purple: #bb86fc;
+  /* Ana Palet - Görüntüden */
+  --steel-blue:    #7A9BAD;    /* koyu mavi-gri */
+  --powder-blue:   #A8C0CC;    /* açık mavi-gri */
+  --cream:         #F2EDE8;    /* krem / arkaplan */
+  --taupe:         #C9B8A8;    /* bej / orta ton */
+  --brown:         #7A5C4E;    /* kahverengi / koyu ton */
+
+  /* Arkaplan */
+  --bg-primary:    #EDE8E3;
+  --bg-secondary:  #F8F4F0;
+  --bg-card:       rgba(242, 237, 232, 0.85);
+  --bg-card-hover: rgba(242, 237, 232, 0.98);
+  --bg-glass:      rgba(122, 155, 173, 0.08);
+  --border-glass:  rgba(122, 155, 173, 0.22);
+
+  /* Yazı */
+  --text-primary:   #3D2B23;
+  --text-secondary: #7A5C4E;
+  --text-muted:     #A8906E;
+
+  /* Vurgu renkleri — palet temelli */
+  --accent-blue:        #7A9BAD;
+  --accent-blue-light:  #A8C0CC;
+  --accent-cyan:        #5F8DA0;
+  --accent-green:       #7A9E8A;
+  --accent-yellow:      #C9A96A;
+  --accent-red:         #B06060;
+  --accent-purple:      #9B7AA8;
+
   --sidebar-width: 260px;
   --header-height: 64px;
-  --radius: 12px;
+  --radius:    12px;
   --radius-sm: 8px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(122, 92, 78, 0.10);
+  --shadow-md: 0 4px 20px rgba(122, 92, 78, 0.15);
+  --shadow-lg: 0 8px 40px rgba(122, 92, 78, 0.20);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 
 /* ===== Reset & Base ===== */
 *, *::before, *::after {
@@ -64,9 +78,9 @@ body::before {
   width: 100%;
   height: 100%;
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(79, 110, 247, 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(0, 212, 255, 0.06) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(187, 134, 252, 0.05) 0%, transparent 50%);
+    radial-gradient(ellipse at 20% 50%, rgba(122, 155, 173, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(168, 192, 204, 0.10) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(201, 184, 168, 0.08) 0%, transparent 50%);
   pointer-events: none;
   z-index: 0;
 }
@@ -102,7 +116,7 @@ body::before {
 .auth-card .logo h1 {
   font-size: 1.8rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--accent-blue-light), var(--accent-cyan));
+  background: linear-gradient(135deg, var(--steel-blue), var(--brown));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -146,8 +160,8 @@ body::before {
 }
 
 .form-group input:focus {
-  border-color: var(--accent-blue);
-  box-shadow: 0 0 0 3px rgba(79, 110, 247, 0.15);
+  border-color: var(--steel-blue);
+  box-shadow: 0 0 0 3px rgba(122, 155, 173, 0.20);
 }
 
 .form-group input::placeholder {
@@ -172,15 +186,15 @@ body::before {
 
 .btn-primary {
   width: 100%;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-light));
-  color: white;
+  background: linear-gradient(135deg, var(--steel-blue), var(--brown));
+  color: #F8F4F0;
   padding: 14px;
   font-size: 1rem;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 110, 247, 0.4);
+  box-shadow: 0 6px 20px rgba(122, 92, 78, 0.35);
 }
 
 .btn-sm {
@@ -248,7 +262,7 @@ body::before {
 .sidebar-header h2 {
   font-size: 1.1rem;
   font-weight: 700;
-  background: linear-gradient(135deg, var(--accent-blue-light), var(--accent-cyan));
+  background: linear-gradient(135deg, var(--steel-blue), var(--brown));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -286,9 +300,9 @@ body::before {
 }
 
 .nav-item.active {
-  background: rgba(79, 110, 247, 0.15);
-  color: var(--accent-blue-light);
-  border-left: 3px solid var(--accent-blue);
+  background: rgba(122, 155, 173, 0.18);
+  color: var(--steel-blue);
+  border-left: 3px solid var(--steel-blue);
 }
 
 .nav-item .icon {
@@ -314,13 +328,13 @@ body::before {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+  background: linear-gradient(135deg, var(--steel-blue), var(--brown));
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-size: 0.85rem;
-  color: white;
+  color: #F8F4F0;
 }
 
 .user-details .name {
@@ -533,14 +547,14 @@ table tbody tr:hover {
   letter-spacing: 0.5px;
 }
 
-.badge-critical { background: rgba(255, 82, 82, 0.2); color: var(--accent-red); }
-.badge-high { background: rgba(255, 82, 82, 0.15); color: #ff8a80; }
-.badge-medium { background: rgba(255, 171, 64, 0.15); color: var(--accent-yellow); }
-.badge-low { background: rgba(0, 230, 118, 0.15); color: var(--accent-green); }
-.badge-active { background: rgba(0, 230, 118, 0.15); color: var(--accent-green); }
-.badge-inactive { background: rgba(160, 160, 204, 0.15); color: var(--text-muted); }
-.badge-admin { background: rgba(187, 134, 252, 0.15); color: var(--accent-purple); }
-.badge-user { background: rgba(79, 110, 247, 0.15); color: var(--accent-blue-light); }
+.badge-critical { background: rgba(176, 96, 96, 0.18); color: var(--accent-red); }
+.badge-high    { background: rgba(176, 96, 96, 0.12); color: #B07070; }
+.badge-medium  { background: rgba(201, 169, 106, 0.18); color: var(--accent-yellow); }
+.badge-low     { background: rgba(122, 158, 138, 0.18); color: var(--accent-green); }
+.badge-active  { background: rgba(122, 158, 138, 0.18); color: var(--accent-green); }
+.badge-inactive{ background: rgba(168, 144, 110, 0.15); color: var(--text-muted); }
+.badge-admin   { background: rgba(155, 122, 168, 0.18); color: var(--accent-purple); }
+.badge-user    { background: rgba(122, 155, 173, 0.18); color: var(--steel-blue); }
 
 /* ===== Status Indicator ===== */
 .status-dot {
@@ -573,9 +587,9 @@ table tbody tr:hover {
 }
 
 @keyframes pulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0.5); }
-  70% { box-shadow: 0 0 0 8px rgba(0, 230, 118, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 230, 118, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(122, 158, 138, 0.55); }
+  70% { box-shadow: 0 0 0 8px rgba(122, 158, 138, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(122, 158, 138, 0); }
 }
 
 /* ===== Risk Meter ===== */

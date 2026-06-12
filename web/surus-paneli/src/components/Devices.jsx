@@ -46,9 +46,9 @@ const Devices = () => {
                             <thead>
                                 <tr>
                                     <th>Cihaz ID</th>
-                                    <th>Kullanıcı (Ref)</th>
-                                    <th>Araç Tipi</th>
-                                    <th>Durum</th>
+                                    <th>Cihaz Adı (Label)</th>
+                                    <th>Platform</th>
+                                    <th>Model</th>
                                     <th>Kayıt Tarihi</th>
                                 </tr>
                             </thead>
@@ -64,14 +64,10 @@ const Devices = () => {
                                 ) : (
                                     devices.map((device) => (
                                         <tr key={device._id}>
-                                            <td style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>{device.deviceId}</td>
-                                            <td>{device.user || 'Belirtilmemiş'}</td>
-                                            <td>{device.vehicleType || 'Bilinmiyor'}</td>
-                                            <td>
-                                                <span className={`badge ${device.isActive ? 'badge-active' : 'badge-inactive'}`}>
-                                                    {device.isActive ? 'AKTİF' : 'PASİF'}
-                                                </span>
-                                            </td>
+                                            <td style={{ fontWeight: 600, color: 'var(--accent-cyan)' }}>{device._id}</td>
+                                            <td>{device.label || 'Belirtilmemiş'}</td>
+                                            <td>{device.platform || 'Bilinmiyor'}</td>
+                                            <td>{device.model || 'Bilinmiyor'}</td>
                                             <td style={{ color: 'var(--text-muted)' }}>
                                                 {new Date(device.createdAt).toLocaleDateString()}
                                             </td>

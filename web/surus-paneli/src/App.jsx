@@ -7,6 +7,7 @@ import Sidebar from './components/Sidebar';
 import Devices from './components/Devices';
 import Alarms from './components/Alarms';
 import Analysis from './components/Analysis';
+import SpeedLimitPanel from './components/SpeedLimitPanel';
 
 // Protected Route bileşeni: Kullanıcı giriş yapmamışsa Login sayfasına atar
 const ProtectedRoute = ({ children }) => {
@@ -58,6 +59,7 @@ function App() {
           <Route path="devices" element={<Devices />} />
           <Route path="alarms" element={<Alarms />} />
           <Route path="analysis" element={<Analysis />} />
+          <Route path="speed-limit" element={<SpeedLimitPanel />} />
         </Route>
 
         {/* Bilinmeyen rotaları varsayılan olarak dashboard'a yönlendir */}

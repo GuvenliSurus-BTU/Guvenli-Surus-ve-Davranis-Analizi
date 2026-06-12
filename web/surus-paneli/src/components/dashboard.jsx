@@ -53,6 +53,7 @@ const Dashboard = () => {
     const [currentSpeed, setCurrentSpeed] = useState(0);
     const [currentAccel, setCurrentAccel] = useState(0);
     const [currentLocation, setCurrentLocation] = useState([39.92077, 32.85411]); // Default: Ankara
+    const [activeDeviceCount, setActiveDeviceCount] = useState(0);
 
     useEffect(() => {
         // 1. Önce geçmiş verileri çek
@@ -83,6 +84,14 @@ const Dashboard = () => {
             }
         })
         .catch(err => console.error("Geçmiş veri çekilemedi:", err));
+
+        // Cihaz sayısını çek
+        fetch('http://localhost:5000/api/v1/devices', {
+            headers: { 'Authorization': 'Bearer dummy_token' }
+        })
+        .then(res => res.json())
+        .then(response => setActiveDeviceCount(response.data ? response.data.length : 0))
+        .catch(err => console.error("Cihaz verisi çekilemedi:", err));
 
         // 2. Canlı verileri dinle (Toplu Gönderim)
         socket.on('yeni-sensor-verisi-toplu', (dataArray) => {
@@ -178,7 +187,7 @@ const Dashboard = () => {
             <div className="stats-grid" id="statsGrid">
               <div className="stat-card blue">
                 <div className="stat-icon">📱</div>
-                <div className="stat-value">1</div>
+                <div className="stat-value">{activeDeviceCount}</div>
                 <div className="stat-label">Aktif Cihaz</div>
               </div>
               <div className="stat-card cyan">

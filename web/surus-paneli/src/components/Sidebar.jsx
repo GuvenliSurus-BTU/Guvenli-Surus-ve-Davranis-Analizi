@@ -49,6 +49,14 @@ const Sidebar = () => {
           <span className="icon">📈</span>
           <span>Sürüş Analizi</span>
         </div>
+
+        <div 
+          className={`nav-item ${location.pathname === '/speed-limit' ? 'active' : ''}`}
+          onClick={() => navigate('/speed-limit')}
+        >
+          <span className="icon">🚦</span>
+          <span>Hız Sınırı</span>
+        </div>
       </nav>
 
       <div className="sidebar-footer">
