@@ -1,0 +1,13 @@
+# Ignore backend and other folders since this branch is only for mobile
+backend/
+Mobile/
+
+node_modules/
+build/
+.dart_tool/
+.idea/
+.vscode/
+dist/
+.pub-cache/
+*.log
+.env
