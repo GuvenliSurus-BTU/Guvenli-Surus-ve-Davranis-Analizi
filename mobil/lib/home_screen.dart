@@ -76,9 +76,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   const Icon(Icons.warning_amber_rounded, color: Colors.white),
                   const SizedBox(width: 10),
                   Expanded(
-                    child: Text(
-                      'ALARM: ${data['type'] == 'HARD_BRAKING' ? 'Ani Fren' : data['type']}',
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ALARM: ${data['type'] == 'HARD_BRAKING' ? 'Ani Fren' : (data['type'] == 'SPEEDING' ? 'Hız İhlali' : data['type'])}',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                        ),
+                        if (data['description'] != null)
+                          Text(data['description'], style: const TextStyle(fontSize: 13)),
+                      ],
                     ),
                   ),
                 ],
@@ -103,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
     // Simulate high values to trigger backend alarms
     double simY = type == 'BRAKE' ? -15.0 : 0.0;
     double simX = type == 'TURN' ? 12.0 : 0.0;
+    double simSpeed = type == 'SPEEDING' ? 45.0 : 10.0; // 45 m/s -> 162 km/h
 
     final data = {
       'deviceId': deviceId,
@@ -112,9 +120,9 @@ class _HomeScreenState extends State<HomeScreen> {
           'accel': {'x': simX, 'y': simY, 'z': 9.8},
           'gyro': {'x': 0.0, 'y': 0.0, 'z': 0.0},
           'gps': {
-            'lat': 40.182,
-            'lng': 29.066,
-            'speed': 25.0, // m/s -> 90 km/h
+            'lat': 41.0151, // İstanbul Merkez
+            'lng': 28.9795,
+            'speed': simSpeed,
             'accuracy': 5.0,
           }
         }
@@ -257,6 +265,16 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             onPressed: () => _simulateEvent('TURN'),
                             child: const Text("🚨 Sert Dönüş Simüle Et", style: TextStyle(color: Colors.white, fontSize: 16)),
+                          ),
+                          const SizedBox(height: 10),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9c27b0),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(50)),
+                              minimumSize: const Size(double.infinity, 45),
+                            ),
+                            onPressed: () => _simulateEvent('SPEEDING'),
+                            child: const Text("🚨 Hız İhlali Simüle Et", style: TextStyle(color: Colors.white, fontSize: 16)),
                           ),
 
                           if (isRunning) ...[
